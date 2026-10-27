@@ -10,7 +10,7 @@ export const DEFAULT_API = 'https://vend16.com';
 export const ENDPOINTS = {
   deviceCode: { method: 'POST', path: '/v1/device/code' },
   deviceToken: { method: 'POST', path: '/v1/device/token' },
-  account: { method: 'GET', path: '/v1/account' },
+  account: { method: 'GET', path: '/v1/me' },
   listApps: { method: 'GET', path: '/v1/apps' },
   createApp: { method: 'POST', path: '/v1/apps' },
   appKeys: { method: 'GET', path: '/v1/apps/:id/keys' },
@@ -146,7 +146,9 @@ export function createApi({ base = DEFAULT_API, token, fetchImpl = globalThis.fe
 
     /** Makes a new secret key (the old one stops working). Never log the result. */
     async createSecretKey(appId) {
-      const r = await call('createSecretKey', { params: { id: appId }, body: {} });
+      // Both callers ask the person first ("any older secret key stops working"),
+      // so a key that was already handed out is replaced rather than refused.
+      const r = await call('createSecretKey', { params: { id: appId }, body: { replace_existing: true } });
       const k = r.secret_key ?? r.secretKey;
       if (!k || !k.startsWith('sk_')) throw new ApiError(500, 'bad_response', 'Vend16 did not return a secret key');
       return k;
@@ -154,13 +156,17 @@ export function createApi({ base = DEFAULT_API, token, fetchImpl = globalThis.fe
 
     async setup(appId) {
       const r = await call('setup', { params: { id: appId } });
-      return list(r, 'items', 'checklist', 'steps').map((s) => ({
-        id: s.id ?? s.key ?? null,
-        label: s.label ?? s.title ?? s.name ?? String(s.id ?? ''),
-        done: !!(s.done ?? s.complete ?? s.ok),
-        how: s.how ?? s.detail ?? s.description ?? null,
-        url: s.url ?? s.link ?? null,
-      }));
+      // vend16.com answers {ready, next, steps: [{id, title, status, next_step, values}]},
+      // status 'done', 'todo' or 'not_needed' (an iOS-only app needs no Play steps).
+      return list(r, 'steps', 'items', 'checklist')
+        .filter((s) => s.status !== 'not_needed')
+        .map((s) => ({
+          id: s.id ?? s.key ?? null,
+          label: s.title ?? s.label ?? s.name ?? String(s.id ?? ''),
+          done: s.status !== undefined ? s.status === 'done' : !!(s.done ?? s.complete ?? s.ok),
+          how: s.next_step ?? s.how ?? s.detail ?? s.description ?? null,
+          url: s.url ?? s.link ?? null,
+        }));
     },
   };
 }

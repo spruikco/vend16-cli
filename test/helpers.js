@@ -37,7 +37,8 @@ export async function fakeVend16(opts = {}) {
       return send(200, { access_token: TOKEN, token_type: 'Bearer', account: { email: 'dev@example.com' } });
     }
     if (!authed) return send(401, { error: { code: 'unauthorized', message: 'Sign in again' } });
-    if (req.method === 'GET' && p === '/v1/account') return send(200, { account: { id: 'acct_1', email: 'dev@example.com', plan: 'Free' } });
+    // Shapes as vend16.com sends them (src/agent.ts whoami, setupStatus).
+    if (req.method === 'GET' && p === '/v1/me') return send(200, { account_id: 'acct_1', email: 'dev@example.com', email_verified: true, plan: 'Free' });
     if (req.method === 'GET' && p === '/v1/apps') return send(200, { apps: state.apps });
     if (req.method === 'POST' && p === '/v1/apps') {
       const a = { id: 'app_new' + (state.apps.length + 1), name: json.name, bundle_id: json.bundle_id ?? null, package_name: json.package_name ?? null, public_key: 'pk_' + 'P'.repeat(32) };
@@ -52,9 +53,10 @@ export async function fakeVend16(opts = {}) {
       if (m[2] === 'secret-key' && req.method === 'POST') { state.secretsMade++; return send(201, { secret_key: SECRET }); }
       if (m[2] === 'setup') {
         if (state.setup === 'missing') return send(404, '');
-        return send(200, { items: [
-          { id: 'bundle_id', label: 'iOS bundle ID', done: !!app.bundle_id },
-          { id: 'apple_notifications', label: 'App Store Server Notifications', done: false, how: `https://vend16.com/v1/notifications/apple/${app.id}` },
+        return send(200, { ready: false, next: 'apple_notifications', steps: [
+          { id: 'app_ids', title: 'iOS bundle ID', status: app.bundle_id ? 'done' : 'todo', next_step: null },
+          { id: 'apple_notifications', title: 'App Store Server Notifications', status: 'todo', next_step: `https://vend16.com/v1/notifications/apple/${app.id}` },
+          { id: 'play_rtdn', title: 'Play real-time notifications', status: 'not_needed', next_step: null },
         ] });
       }
     }
