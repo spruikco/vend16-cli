@@ -12,8 +12,6 @@ npx github:spruikco/vend16-cli init
 
 Works with Capacitor 8, React Native, Expo, Flutter, and native Swift and Kotlin apps. Needs Node 20 or later.
 
-> **Rolling out:** sign-in from the CLI and the app management API are being switched on at vend16.com. Until then `init` stops with exit code 5 and says so; create your app at https://vend16.com/signup and put its public key in your app by hand (the table below shows where).
-
 ## What `init` does
 
 1. **Finds your app.** Reads `capacitor.config`, `package.json`, `app.json`, `pubspec.yaml`, your `.xcodeproj` and `app/build.gradle` for the iOS bundle ID and Android application ID.
