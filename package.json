@@ -1,0 +1,51 @@
+{
+  "name": "vend16",
+  "version": "0.1.0",
+  "description": "Put a buy button in your app. We get the rest sorted. The Vend16 CLI signs you in, finds your app, adds your key and tells you what is left, so people and coding agents can add verified in-app purchases in one command.",
+  "license": "MIT",
+  "author": "Spruik Co Pty Ltd <hello@spruik.co> (https://spruik.co)",
+  "homepage": "https://vend16.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spruikco/vend16-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/spruikco/vend16-cli/issues",
+    "email": "hello@spruik.co"
+  },
+  "type": "module",
+  "bin": {
+    "vend16": "bin/vend16.js"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "AGENTS.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.js\""
+  },
+  "keywords": [
+    "vend16",
+    "in-app-purchase",
+    "iap",
+    "storekit",
+    "play-billing",
+    "subscriptions",
+    "receipt-validation",
+    "revenuecat-alternative",
+    "capacitor",
+    "react-native",
+    "flutter",
+    "cli",
+    "agents"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
